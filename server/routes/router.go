@@ -1,16 +1,17 @@
 package routes
 
 import (
+	"server/users"
+
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-func Setup(db *gorm.DB) *fiber.App {
+func Setup() *fiber.App {
 	app := fiber.New(fiber.Config{})
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	setupMiddlewares(app)
+
+	users.RegisterRoutes(app)
 
 	return app
 }

@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-	"server/config"
+
+	"server/db"
 	"server/routes"
 
 	"github.com/joho/godotenv"
@@ -13,9 +14,9 @@ func main() {
 		log.Fatalln("Error loading .env file")
 	}
 
-	db := config.InitDB()
+	db.Connect()
 
-	app := routes.Setup(db)
+	app := routes.Setup()
 
 	app.Listen("0.0.0.0:1234")
 }

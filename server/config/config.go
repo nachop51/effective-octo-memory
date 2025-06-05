@@ -2,14 +2,14 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/go-playground/validator/v10"
 )
 
-func InitDB() *gorm.DB {
+var Validate = validator.New()
+
+func GetDBDSN() string {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
@@ -22,11 +22,5 @@ func InitDB() *gorm.DB {
 		host, user, password, dbname, port, sslmode,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return db
+	return dsn
 }
