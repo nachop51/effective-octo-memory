@@ -5,6 +5,7 @@ import (
 
 	"server/db"
 	"server/routes"
+	"server/users"
 
 	"github.com/joho/godotenv"
 )
@@ -15,6 +16,7 @@ func main() {
 	}
 
 	db.Connect()
+	db.AutoMigrate(&users.User{})
 
 	app := routes.Setup()
 
