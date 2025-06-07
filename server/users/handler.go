@@ -15,13 +15,23 @@ type UserBody struct {
 	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 }
 
-func createUserHandler(c *fiber.Ctx) error {
+type UserHandler struct {
+	service *UserService
+}
+
+func NewUserHandler(service *UserService) *UserHandler {
+	return &UserHandler{
+		service: service,
+	}
+}
+
+func (h *UserHandler) createUserHandler(c *fiber.Ctx) error {
 	body, ok := utils.BindAndValidate[UserBody](c)
 	if !ok {
 		return nil
 	}
 
-	user, err := CreateUser(*body)
+	user, err := h.service.CreateUser(*body)
 	if err != nil {
 		return err
 	}
@@ -34,13 +44,13 @@ type LoginBody struct {
 	Password string `json:"password" validate:"required"`
 }
 
-func loginHandler(c *fiber.Ctx) error {
+func (h *UserHandler) loginHandler(c *fiber.Ctx) error {
 	creds, ok := utils.BindAndValidate[LoginBody](c)
 	if !ok {
 		return nil
 	}
 
-	user, err := GetUser(creds.Email)
+	user, err := h.service.GetUser(creds.Email)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Invalid credentials",
@@ -53,7 +63,7 @@ func loginHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	tokenString, err := GenerateJWT(user)
+	tokenString, err := h.service.GenerateJWT(user)
 	if err != nil {
 		return err
 	}
@@ -63,7 +73,7 @@ func loginHandler(c *fiber.Ctx) error {
 	})
 }
 
-func RegisterRoutes(app *fiber.App) {
-	app.Post("/users", createUserHandler)
-	app.Post("/login", loginHandler)
+func (h *UserHandler) RegisterRoutes(app *fiber.App) {
+	app.Post("/users", h.createUserHandler)
+	app.Post("/login", h.loginHandler)
 }

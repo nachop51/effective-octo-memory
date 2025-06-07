@@ -3,13 +3,22 @@ package users
 import (
 	"time"
 
-	"server/config"
-
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUser(body UserBody) (*User, error) {
+type UserService struct {
+	store  *UserStore
+	jwtKey []byte
+}
+
+func NewUserService(store *UserStore, jwtKey []byte) *UserService {
+	return &UserService{
+		store:  store,
+		jwtKey: jwtKey,
+	}
+}
+func (s *UserService) CreateUser(body UserBody) (*User, error) {
 	password, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -22,28 +31,27 @@ func CreateUser(body UserBody) (*User, error) {
 		Password:  string(password),
 	}
 
-	res := config.Conn.Create(&user)
+	res := s.store.CreateUser(&user)
 
-	if res.Error != nil {
-		return nil, res.Error
+	if res != nil {
+		return nil, res
 	}
 
 	return &user, nil
 }
 
-func GetUser(email string) (*User, error) {
-	var user User
+func (s *UserService) GetUser(email string) (*User, error) {
 
-	err := config.Conn.Where("email = ?", email).First(&user)
+	user, err := s.store.GetUserByEmail(email)
 
-	if err.Error != nil {
-		return nil, err.Error
+	if err != nil {
+		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
-func GenerateJWT(user *User) (string, error) {
+func (s *UserService) GenerateJWT(user *User) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
@@ -51,5 +59,5 @@ func GenerateJWT(user *User) (string, error) {
 	claims["email"] = user.Email
 	claims["exp"] = time.Now().Add(time.Hour * 24 * 30).Unix()
 
-	return token.SignedString(config.JwtKey)
+	return token.SignedString(s.jwtKey)
 }

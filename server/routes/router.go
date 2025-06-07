@@ -6,12 +6,16 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Setup() *fiber.App {
+type AppHandlers struct {
+	UserHandler *users.UserHandler
+}
+
+func Setup(handlers *AppHandlers) *fiber.App {
 	app := fiber.New(fiber.Config{})
 
 	setupMiddlewares(app)
 
-	users.RegisterRoutes(app)
+	handlers.UserHandler.RegisterRoutes(app)
 
 	return app
 }
