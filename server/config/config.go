@@ -1,26 +1,32 @@
 package config
 
 import (
-	"fmt"
+	"log"
 	"os"
 
+	"server/db"
+
 	"github.com/go-playground/validator/v10"
+	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
 
-var Validate = validator.New()
+var (
+	Validate = validator.New()
+	JwtKey   []byte
+	Conn     *gorm.DB
+)
 
-func GetDBDSN() string {
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
-	sslmode := os.Getenv("DB_SSLMODE")
+func Init() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalln("Error loading .env file")
+	}
 
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		host, user, password, dbname, port, sslmode,
-	)
+	JwtKey = []byte(os.Getenv("JWT_KEY"))
 
-	return dsn
+	if len(JwtKey) == 0 {
+		log.Fatalln("JWT_KEY is not set")
+	}
+
+	Conn = db.Connect()
 }
