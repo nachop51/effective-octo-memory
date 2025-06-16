@@ -1,9 +1,6 @@
 <script lang="ts">
 	import LoginForm from '$lib/components/common/login-form.svelte'
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end'
-	// import type { PageData } from './$types'
-
-	// export let data: PageData
 </script>
 
 <main

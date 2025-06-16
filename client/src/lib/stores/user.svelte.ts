@@ -1,124 +1,122 @@
-import { goto } from '$app/navigation'
-import { page } from '$app/state'
-import {
-	logIn as logInService,
-	checkUser as checkUserService,
-	signUp as signUpService
-} from '$lib/services/api'
-import type { User } from '$lib/types.d.ts'
-import { getContext, onMount, setContext } from 'svelte'
+// import { goto } from '$app/navigation'
+// import { page } from '$app/state'
+// import {
+// 	logIn as logInService,
+// 	checkUser as checkUserService,
+// 	signUp as signUpService,
+// 	logOut as logoutService
+// } from '$lib/services/api'
+// import type { User } from '$lib/types.d.ts'
+// import { getContext, onMount, setContext } from 'svelte'
 
-interface IUserStore {
-	user: User | null
-	isLoading: boolean
-	logIn: ({ email, password }: Pick<User, 'email' | 'password'>) => Promise<User | null>
-	signUp: ({
-		email,
-		password,
-		confirmPassword
-	}: Pick<User, 'email' | 'password'> & { confirmPassword: string }) => Promise<User | null>
-	checkLogIn: () => Promise<User | null>
-	logout: () => Promise<void>
-}
+// interface IUserStore {
+// 	user: User | null
+// 	isLoading: boolean
+// 	logIn: ({ email, password }: Pick<User, 'email' | 'password'>) => Promise<User | null>
+// 	signUp: (data: Omit<User, 'id'> & { confirmPassword: string }) => Promise<User | null>
+// 	checkLogIn: () => Promise<User | null>
+// 	logout: () => Promise<void>
+// }
 
-class UserStore implements IUserStore {
-	user: User | null = $state(null)
-	isLoading: boolean = $state(false)
+// class UserStore implements IUserStore {
+// 	user: User | null = $state(null)
+// 	isLoading: boolean = $state(true)
 
-	constructor() {
-		onMount(async () => {
-			const res = await this.checkLogIn()
+// 	constructor() {
+// 		onMount(async () => {
+// 			const res = await this.checkLogIn()
 
-			if (res) {
-				this.user = res
-			}
+// 			if (res) {
+// 				this.user = res
+// 			}
 
-			if (!res && page.url.pathname !== '/login') {
-				goto('/login')
-			}
-		})
-	}
+// 			if (!res && page.url.pathname !== '/login') {
+// 				goto('/login')
+// 			}
+// 		})
+// 	}
 
-	async logIn({ email, password }: Pick<User, 'email' | 'password'>): Promise<User | null> {
-		this.isLoading = true
+// 	async logIn({ email, password }: Pick<User, 'email' | 'password'>): Promise<User | null> {
+// 		const [user, err] = await logInService({
+// 			email,
+// 			password: password!
+// 		})
 
-		const user = await logInService({
-			email,
-			password: password!
-		})
+// 		if (err) {
+// 			return null
+// 		}
 
-		this.isLoading = false
+// 		this.user = user
 
-		if (!user) {
-			return null
-		}
+// 		return user
+// 	}
 
-		this.user = user
+// 	async signUp({
+// 		firstName,
+// 		lastName,
+// 		email,
+// 		password,
+// 		confirmPassword
+// 	}: Omit<User, 'id'> & { confirmPassword: string }): Promise<User | null> {
+// 		const [user, err] = await signUpService({
+// 			firstName,
+// 			lastName,
+// 			email,
+// 			password: password!,
+// 			confirmPassword
+// 		})
 
-		return user
-	}
+// 		if (err) {
+// 			return null
+// 		}
 
-	async signUp({
-		email,
-		password,
-		confirmPassword
-	}: Pick<User, 'email' | 'password'> & { confirmPassword: string }): Promise<User | null> {
-		this.isLoading = true
+// 		this.user = user
 
-		const user = await signUpService({
-			email,
-			password: password!,
-			confirmPassword
-		})
+// 		return user
+// 	}
 
-		this.isLoading = false
+// 	async checkLogIn(): Promise<User | null> {
+// 		this.isLoading = true
 
-		if (!user) {
-			return null
-		}
+// 		const [user, err] = await checkUserService()
 
-		this.user = user
+// 		this.isLoading = false
 
-		return user
-	}
+// 		if (err) {
+// 			// console.error('Check login failed:', res.error)
+// 			return null
+// 		}
 
-	async checkLogIn(): Promise<User | null> {
-		this.isLoading = true
+// 		this.user = user
 
-		const user = await checkUserService()
+// 		return user
+// 	}
 
-		this.isLoading = false
+// 	async logout(): Promise<void> {
+// 		const [, err] = await logoutService()
 
-		return user
-	}
+// 		if (err) {
+// 			console.error('Logout failed:', err)
+// 			return
+// 		}
+// 		this.user = null
+// 	}
+// }
 
-	async logout(): Promise<void> {
-		this.isLoading = true
+// // -------------------------------------------------------------------
 
-		try {
-			// TODO: Implement actual logout logic here
-		} catch (error) {
-			console.error('Logout failed:', error)
-		} finally {
-			this.isLoading = false
-		}
-	}
-}
+export const USER_STORE_KEY = '$_user_store'
 
-// -------------------------------------------------------------------
+// export function initUserStore() {
+// 	return setContext(USER_STORE_KEY, new UserStore())
+// }
 
-const USER_STORE_KEY = '$_user_store'
+// export function getUserStore() {
+// 	const store = getContext<ReturnType<typeof initUserStore>>(USER_STORE_KEY)
 
-export function initUserStore() {
-	return setContext(USER_STORE_KEY, new UserStore())
-}
+// 	if (!store) {
+// 		throw new Error('User store not initialized')
+// 	}
 
-export function getUserStore() {
-	const store = getContext<ReturnType<typeof initUserStore>>(USER_STORE_KEY)
-
-	if (!store) {
-		throw new Error('User store not initialized')
-	}
-
-	return store
-}
+// 	return store
+// }

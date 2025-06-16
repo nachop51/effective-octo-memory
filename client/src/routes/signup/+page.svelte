@@ -1,6 +1,9 @@
 <script lang="ts">
 	import SignupForm from '$lib/components/common/signup-form.svelte'
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end'
+	import type { PageProps } from './$types'
+
+	let { form }: PageProps = $props()
 </script>
 
 <main
@@ -15,6 +18,6 @@
 			</div>
 			Effective Octo Memory
 		</a>
-		<SignupForm />
+		<SignupForm {form} />
 	</div>
 </main>

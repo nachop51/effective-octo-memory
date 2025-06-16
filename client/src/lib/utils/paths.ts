@@ -1,17 +1,16 @@
-import { API_URL } from '$lib/constants'
-
 const paths = {
+	home: () => '/',
 	login: () => '/login',
-	home: () => '/home',
+	signup: () => '/signup',
 	dashboard: () => '/dashboard',
 	profile: () => '/profile',
 	settings: () => '/settings',
 	api: {
-		login: () => API_URL + '/login',
-		signup: () => API_URL + '/signup',
-		checkUser: () => API_URL + '/check',
-		logout: () => API_URL + '/logout',
-		health: () => API_URL + '/health'
+		login: () => 'login',
+		signup: () => 'signup',
+		checkUser: () => 'check',
+		logout: () => 'logout',
+		health: () => 'health'
 	}
 }
 

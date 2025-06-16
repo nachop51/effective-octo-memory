@@ -6,30 +6,25 @@
 	import type { HTMLAttributes } from 'svelte/elements'
 	import AppleIcon from '../icons/apple-icon.svelte'
 	import GoogleIcon from '../icons/google-icon.svelte'
-	import { getUserStore } from '$lib/stores/user.svelte'
-	import { goto } from '$app/navigation'
+	import { enhance } from '$app/forms'
 	let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props()
-
-	const userStore = getUserStore()
 
 	let email = $state('')
 	let password = $state('')
 
-	async function onSubmit(event: Event) {
-		event.preventDefault()
+	// async function onSubmit(event: Event) {
+	// 	event.preventDefault()
 
-		const res = await userStore.logIn({ email, password })
+	// 	const res = await logIn({ email, password })
 
-		console.log({ res })
+	// 	console.log({ res })
 
-		if (!res) {
-			// Handle login error (e.g., show a notification)
-			console.error('Login failed')
-			return
-		}
-
-		goto('/')
-	}
+	// 	if (!res) {
+	// 		// Handle login error (e.g., show a notification)
+	// 		console.error('Login failed')
+	// 		return
+	// 	}
+	// }
 </script>
 
 <div class={cn('flex flex-col gap-4', className)} {...restProps}>
@@ -39,7 +34,7 @@
 			<Card.Description>Login with your Apple or Google account</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form class="flex flex-col gap-4" onsubmit={onSubmit}>
+			<form class="flex flex-col gap-4" method="post" action="/auth?/logIn" use:enhance>
 				<div class="flex flex-col gap-4">
 					<Button variant="outline" class="w-full">
 						<AppleIcon class="size-4" />
@@ -57,6 +52,7 @@
 				</div>
 				<div class="grid gap-4">
 					<Input
+						name="email"
 						label="Email"
 						type="email"
 						placeholder="your-email@example.com"
@@ -64,6 +60,7 @@
 						bind:value={email}
 					/>
 					<Input
+						name="password"
 						label="Password"
 						type="password"
 						placeholder="*********"

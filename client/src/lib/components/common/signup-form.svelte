@@ -3,37 +3,21 @@
 	import * as Card from '$lib/components/ui/card/index.js'
 	import { Input } from '$lib/components/ui/input'
 	import { cn } from '$lib/utils.js'
-	import type { HTMLAttributes } from 'svelte/elements'
 	import AppleIcon from '../icons/apple-icon.svelte'
 	import GoogleIcon from '../icons/google-icon.svelte'
-	import { getUserStore } from '$lib/stores/user.svelte'
-	let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props()
+	import { enhance } from '$app/forms'
+	import type { HTMLAttributes } from 'svelte/elements'
+	import type { ActionData } from '../../../routes/signup/$types'
 
-	const userStore = getUserStore()
-
-	let email = $state('')
-	let password = $state('')
-	let confirmPassword = $state('')
-
-	async function handleSubmit(event: Event) {
-		event.preventDefault()
-
-		if (password !== confirmPassword || !email || !password) {
-			return
-		}
-
-		const user = await userStore.signUp({
-			email,
-			password,
-			confirmPassword
-		})
-
-		if (!user) {
-			// Handle signup error (e.g., show a notification)
-			console.error('Signup failed')
-			return
-		}
+	type Props = HTMLAttributes<HTMLDivElement> & {
+		form: ActionData
 	}
+
+	let { class: className, form, ...restProps }: Props = $props()
+
+	$effect(() => {
+		console.log({ form })
+	})
 </script>
 
 <div class={cn('flex flex-col gap-4', className)} {...restProps}>
@@ -43,7 +27,7 @@
 			<Card.Description>Continue with your Apple or Google account</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
+			<form class="flex flex-col gap-4" action="/signup?" method="POST" use:enhance>
 				<div class="flex flex-col gap-4">
 					<Button variant="outline" class="w-full">
 						<AppleIcon class="size-4" />
@@ -59,33 +43,44 @@
 				>
 					<span class="bg-card text-muted-foreground relative z-10 px-2"> Or continue with </span>
 				</div>
-				<div class="grid gap-4">
+				<div class="flex flex-col gap-4">
+					<div class="flex gap-4">
+						<Input name="firstName" label="First Name" type="text" placeholder="John" required />
+						<Input name="lastName" label="Last Name" type="terrorext" placeholder="Doe" required />
+					</div>
 					<Input
+						name="email"
 						label="Email"
 						type="email"
 						placeholder="your-email@example.com"
 						required
-						bind:value={email}
 					/>
 					<Input
+						name="password"
 						label="Password"
 						type="password"
 						placeholder="*********"
 						required
-						bind:value={password}
 					/>
 					<Input
-						label="Password"
+						name="confirmPassword"
+						label="Confirm Password"
 						type="password"
 						placeholder="*********"
 						required
-						bind:value={confirmPassword}
 					/>
-					<Button type="submit" class="w-full">Login</Button>
+
+					{#if form?.error}
+						<div class="text-red-500 text-sm">
+							{form?.error || 'An error occurred. Please try again.'}
+						</div>
+					{/if}
+
+					<Button type="submit" class="w-full">Create account</Button>
 				</div>
 				<div class="text-center text-sm">
 					Already have an account?
-					<a href="/login" class="underline underline-offset-4">Sign up</a>
+					<a href="/login" class="underline underline-offset-4">Log In</a>
 				</div>
 			</form>
 		</Card.Content>
