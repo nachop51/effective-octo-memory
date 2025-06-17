@@ -1,6 +1,7 @@
 package users
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -8,11 +9,11 @@ import (
 )
 
 type UserService struct {
-	store  *UserStore
+	store  UserRepository
 	jwtKey []byte
 }
 
-func NewUserService(store *UserStore, jwtKey []byte) *UserService {
+func NewUserService(store UserRepository, jwtKey []byte) *UserService {
 	return &UserService{
 		store:  store,
 		jwtKey: jwtKey,
@@ -29,40 +30,37 @@ func (s *UserService) CreateUser(body UserBody) (*User, error) {
 		return nil, err
 	}
 
-	user := User{
+	user := &User{
 		FirstName: body.FirstName,
 		LastName:  body.LastName,
 		Email:     body.Email,
-		Password:  string(password),
+		Password:  password,
 	}
 
-	res := s.store.CreateUser(&user)
+	res := s.store.CreateUser(user)
 
 	if res != nil {
 		return nil, res
 	}
 
-	return &user, nil
-}
-
-func (s *UserService) GetUser(email string) (*User, error) {
-
-	user, err := s.store.GetUserByEmail(email)
-
-	if err != nil {
-		return nil, err
-	}
-
 	return user, nil
 }
 
+func (s *UserService) GetUser(email string) (*User, error) {
+	return s.store.GetUserByEmail(email)
+}
+
 func (s *UserService) GenerateJWT(user *User) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
+	now := time.Now()
 
-	claims := token.Claims.(jwt.MapClaims)
+	claims := jwt.RegisteredClaims{
+		Subject:   strconv.Itoa(int(user.ID)),
+		Issuer:    "effective-octo-memory",
+		IssuedAt:  jwt.NewNumericDate(now),
+		ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 24 * 30)),
+	}
 
-	claims["email"] = user.Email
-	claims["exp"] = time.Now().Add(time.Hour * 24 * 30).Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString(s.jwtKey)
 }

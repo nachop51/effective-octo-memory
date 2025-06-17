@@ -31,10 +31,9 @@ func (s *UserStore) CreateUser(user *User) error {
 func (s *UserStore) GetUserByEmail(email string) (*User, error) {
 	var user User
 
-	err := s.db.Where("email = ?", email).First(&user)
-
-	if err.Error != nil {
-		return nil, err.Error
+	err := s.db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
 	}
 
 	return &user, nil

@@ -1,20 +1,45 @@
 package main
 
 import (
+	"flag"
+	"log"
+
+	"server/app"
 	"server/config"
-	"server/db"
-	"server/server"
-	"server/users"
+	"server/domains/accounts"
+	"server/domains/users"
+	"server/pkg/db"
 )
 
 func main() {
-	config.Init()
+	longMigrate := flag.Bool("migrate", false, "Run database migrations")
+	shortMigrate := flag.Bool("m", false, "Run database migrations (short)")
+	flag.Parse()
 
-	db.AutoMigrate(config.Conn, &users.User{})
+	migrate := *longMigrate || *shortMigrate
 
-	app := server.NewServer(config.Conn)
+	appConfig, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
 
-	app.SetupRoutes()
+	dps, err := config.NewDependencies(appConfig)
+	if err != nil {
+		log.Fatalf("Failed to initialize dependencies: %v", err)
+	}
 
-	app.Start("0.0.0.0:1234")
+	if migrate {
+		log.Println("Running database migrations...")
+		db.AutoMigrate(dps.DB, &users.User{}, &accounts.Account{})
+		log.Println("Database migrations completed.")
+		return
+	}
+
+	application := app.New(dps)
+	application.Setup()
+
+	log.Printf("Server starting on %s:%d", appConfig.Server.Host, appConfig.Server.Port)
+	if err := application.Start(); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
