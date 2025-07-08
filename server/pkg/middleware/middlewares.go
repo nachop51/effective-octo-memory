@@ -53,6 +53,8 @@ func SetupMiddlewares(app *fiber.App, jwtKey []byte, unprotectedRoutes map[strin
 	app.Use(logger.New(logger.Config{
 		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+	}))
 	app.Use(NewAuthMiddleware(jwtKey, unprotectedRoutes))
 }

@@ -96,6 +96,6 @@ func (h *UserHandler) loginHandler(c *fiber.Ctx) error {
 
 func (h *UserHandler) RegisterRoutes(app *fiber.App) {
 	app.Get("/users", h.getUsers)
-	app.Post("/users", h.createUserHandler)
+	app.Post("/register", h.createUserHandler)
 	app.Post("/login", h.loginHandler)
 }

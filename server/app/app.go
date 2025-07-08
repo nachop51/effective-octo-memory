@@ -34,6 +34,10 @@ func (a *App) setupMiddleware() {
 }
 
 func (a *App) setupRoutes() {
+	a.server.Get("/health", func(c *fiber.Ctx) error {
+		return c.SendString("OK")
+	})
+
 	// Users
 	userStore := users.NewUserStore(a.db)
 	userService := users.NewUserService(userStore, a.config.JWTConfig.SecretKey)
@@ -55,4 +59,8 @@ func (a *App) Setup() {
 func (a *App) Start() error {
 	addr := fmt.Sprintf("%s:%d", a.config.Server.Host, a.config.Server.Port)
 	return a.server.Listen(addr)
+}
+
+func (a *App) GetServer() *fiber.App {
+	return a.server
 }
