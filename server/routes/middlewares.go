@@ -6,9 +6,13 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-func setupMiddlewares(app *fiber.App) {
+func AuthMiddleware(c *fiber.Ctx) error {
+
+}
+
+func SetupMiddlewares(app *fiber.App) {
 	app.Use(logger.New(logger.Config{
-    Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
+		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
 	app.Use(cors.New())
 }

@@ -18,6 +18,11 @@ func NewUserService(store *UserStore, jwtKey []byte) *UserService {
 		jwtKey: jwtKey,
 	}
 }
+
+func (s *UserService) GetUsers() ([]*User, error) {
+	return s.store.GetUsers()
+}
+
 func (s *UserService) CreateUser(body UserBody) (*User, error) {
 	password, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {

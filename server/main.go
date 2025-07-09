@@ -3,7 +3,7 @@ package main
 import (
 	"server/config"
 	"server/db"
-	"server/routes"
+	"server/server"
 	"server/users"
 )
 
@@ -12,13 +12,9 @@ func main() {
 
 	db.AutoMigrate(config.Conn, &users.User{})
 
-	userStore := users.NewUserStore(config.Conn)
-	userService := users.NewUserService(userStore, config.JwtKey)
-	userHandler := users.NewUserHandler(userService)
+	app := server.NewServer(config.Conn)
 
-	app := routes.Setup(&routes.AppHandlers{
-		UserHandler: userHandler,
-	})
+	app.SetupRoutes()
 
-	app.Listen("0.0.0.0:1234")
+	app.Start("0.0.0.0:1234")
 }

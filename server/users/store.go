@@ -12,6 +12,18 @@ func NewUserStore(db *gorm.DB) *UserStore {
 	}
 }
 
+func (s *UserStore) GetUsers() ([]*User, error) {
+	var users []*User
+
+	res := s.db.Find(&users)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return users, nil
+}
+
 func (s *UserStore) CreateUser(user *User) error {
 	return s.db.Create(user).Error
 }

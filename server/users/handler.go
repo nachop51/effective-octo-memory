@@ -7,14 +7,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserBody struct {
-	FirstName            string `json:"firstName" validate:"required"`
-	LastName             string `json:"lastName" validate:"required"`
-	Email                string `json:"email" validate:"required,email"`
-	Password             string `json:"password" validate:"required"`
-	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
-}
-
 type UserHandler struct {
 	service *UserService
 }
@@ -23,6 +15,24 @@ func NewUserHandler(service *UserService) *UserHandler {
 	return &UserHandler{
 		service: service,
 	}
+}
+
+func (h *UserHandler) getUsers(c *fiber.Ctx) error {
+	users, err := h.service.GetUsers()
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(users)
+}
+
+type UserBody struct {
+	FirstName            string `json:"firstName" validate:"required"`
+	LastName             string `json:"lastName" validate:"required"`
+	Email                string `json:"email" validate:"required,email"`
+	Password             string `json:"password" validate:"required"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 }
 
 func (h *UserHandler) createUserHandler(c *fiber.Ctx) error {
@@ -74,6 +84,7 @@ func (h *UserHandler) loginHandler(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) RegisterRoutes(app *fiber.App) {
+	app.Get("/users", h.getUsers)
 	app.Post("/users", h.createUserHandler)
 	app.Post("/login", h.loginHandler)
 }
