@@ -154,6 +154,12 @@
 	:root {
 		color-scheme: dark light;
 	}
+	/*
+	html {
+		scroll-behavior: smooth;
+		overflow: auto;
+		scrollbar-gutter: stable both-edges;
+	} */
 
 	* {
 		@apply border-border outline-ring/50;
