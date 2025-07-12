@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,11 +10,19 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func NewAuthMiddleware(jwtKey []byte, unprotectedRoutes map[string]bool) fiber.Handler {
+var unprotectedRoutes = map[string]bool{
+	"/login":    true,
+	"/register": true,
+	"/health":   true,
+}
+
+func NewAuthMiddleware(jwtKey []byte) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		path := c.Path()
 
-		path = strings.Trim(path, "/")
+		path = strings.TrimRight(path, "/")
+
+		fmt.Println("Checking path:", path)
 
 		if _, ok := unprotectedRoutes[path]; ok {
 			return c.Next()
@@ -49,12 +58,13 @@ func NewAuthMiddleware(jwtKey []byte, unprotectedRoutes map[string]bool) fiber.H
 	}
 }
 
-func SetupMiddlewares(app *fiber.App, jwtKey []byte, unprotectedRoutes map[string]bool) {
+func SetupMiddlewares(app *fiber.App, jwtKey []byte) {
 	app.Use(logger.New(logger.Config{
 		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 	}))
-	app.Use(NewAuthMiddleware(jwtKey, unprotectedRoutes))
+	app.Use(cors.New())
+	app.Use(NewAuthMiddleware(jwtKey))
 }

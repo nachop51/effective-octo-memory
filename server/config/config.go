@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/caarlos0/env/v10"
 	"github.com/joho/godotenv"
@@ -13,7 +12,6 @@ type Config struct {
 	Server    ServerConfig   `envPrefix:"SERVER_"`
 	Database  DatabaseConfig `envPrefix:"DB_"`
 	JWTConfig JWTConfig
-	Security  SecurityConfig
 }
 
 type ServerConfig struct {
@@ -35,10 +33,6 @@ type JWTConfig struct {
 	SecretKey []byte
 }
 
-type SecurityConfig struct {
-	UnprotectedRoutes map[string]bool
-}
-
 func Load() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
 		if !os.IsNotExist(err) {
@@ -55,8 +49,6 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	cfg.parseUnprotectedRoutes()
-
 	return cfg, nil
 }
 
@@ -67,26 +59,6 @@ func (c *Config) parseJWTConfig() error {
 	}
 	c.JWTConfig.SecretKey = []byte(secretKey)
 	return nil
-}
-
-func (c *Config) parseUnprotectedRoutes() {
-	unprotectedRoutes := os.Getenv("UNPROTECTED_ROUTES")
-	if unprotectedRoutes == "" {
-		c.Security.UnprotectedRoutes = make(map[string]bool)
-		return
-	}
-
-	routes := strings.Split(unprotectedRoutes, ",")
-	c.Security.UnprotectedRoutes = make(map[string]bool, len(routes))
-	for _, route := range routes {
-		route = strings.TrimSpace(route)
-		if route != "" {
-			c.Security.UnprotectedRoutes[route] = true
-		}
-	}
-	if len(c.Security.UnprotectedRoutes) == 0 {
-		c.Security.UnprotectedRoutes = make(map[string]bool)
-	}
 }
 
 func (c *Config) IsDevelopment() bool {

@@ -30,7 +30,7 @@ func New(dps *config.Dependencies) *App {
 }
 
 func (a *App) setupMiddleware() {
-	middleware.SetupMiddlewares(a.server, a.config.JWTConfig.SecretKey, a.config.Security.UnprotectedRoutes)
+	middleware.SetupMiddlewares(a.server, a.config.JWTConfig.SecretKey)
 }
 
 func (a *App) setupRoutes() {
