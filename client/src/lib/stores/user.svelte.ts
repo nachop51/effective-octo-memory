@@ -1,19 +1,23 @@
 import { goto } from '$app/navigation'
 import { page } from '$app/state'
+import {
+	logIn as logInService,
+	checkUser as checkUserService,
+	signUp as signUpService
+} from '$lib/services/api'
 import type { User } from '$lib/types.d.ts'
 import { getContext, onMount, setContext } from 'svelte'
-
-export const userState = $state({
-	user: null as User | null,
-	isLoading: false
-})
 
 interface IUserStore {
 	user: User | null
 	isLoading: boolean
-	logIn: (email: string, password: string) => Promise<User | null>
+	logIn: ({ email, password }: Pick<User, 'email' | 'password'>) => Promise<User | null>
+	signUp: ({
+		email,
+		password,
+		confirmPassword
+	}: Pick<User, 'email' | 'password'> & { confirmPassword: string }) => Promise<User | null>
 	checkLogIn: () => Promise<User | null>
-	updateUser: (user: User) => Promise<User>
 	logout: () => Promise<void>
 }
 
@@ -35,44 +39,59 @@ class UserStore implements IUserStore {
 		})
 	}
 
-	async logIn(email: string, password: string): Promise<User | null> {
+	async logIn({ email, password }: Pick<User, 'email' | 'password'>): Promise<User | null> {
 		this.isLoading = true
 
-		try {
-			// TODO: Implement actual login logic here
-			await new Promise((resolve) => setTimeout(resolve, 1000))
-		} catch (error) {
-			console.error('Login failed:', error)
+		const user = await logInService({
+			email,
+			password: password!
+		})
+
+		this.isLoading = false
+
+		if (!user) {
 			return null
-		} finally {
-			this.isLoading = false
 		}
+
+		this.user = user
+
+		return user
+	}
+
+	async signUp({
+		email,
+		password,
+		confirmPassword
+	}: Pick<User, 'email' | 'password'> & { confirmPassword: string }): Promise<User | null> {
+		this.isLoading = true
+
+		const user = await signUpService({
+			email,
+			password: password!,
+			confirmPassword
+		})
+
+		this.isLoading = false
+
+		if (!user) {
+			return null
+		}
+
+		this.user = user
+
+		return user
 	}
 
 	async checkLogIn(): Promise<User | null> {
 		this.isLoading = true
 
-		try {
-			// TODO: Implement actual check login logic here
-		} catch (error) {
-			console.error('Check login failed:', error)
-			return null
-		} finally {
-			this.isLoading = false
-		}
-	}
-	async updateUser(user: User): Promise<User | null> {
-		this.isLoading = true
+		const user = await checkUserService()
 
-		try {
-			// TODO: Implement actual update user logic here
-		} catch (error) {
-			console.error('Update user failed:', error)
-			throw error
-		} finally {
-			this.isLoading = false
-		}
+		this.isLoading = false
+
+		return user
 	}
+
 	async logout(): Promise<void> {
 		this.isLoading = true
 

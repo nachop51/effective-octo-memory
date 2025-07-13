@@ -6,7 +6,30 @@
 	import type { HTMLAttributes } from 'svelte/elements'
 	import AppleIcon from '../icons/apple-icon.svelte'
 	import GoogleIcon from '../icons/google-icon.svelte'
+	import { getUserStore } from '$lib/stores/user.svelte'
+	import { goto } from '$app/navigation'
 	let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props()
+
+	const userStore = getUserStore()
+
+	let email = $state('')
+	let password = $state('')
+
+	async function onSubmit(event: Event) {
+		event.preventDefault()
+
+		const res = await userStore.logIn({ email, password })
+
+		console.log({ res })
+
+		if (!res) {
+			// Handle login error (e.g., show a notification)
+			console.error('Login failed')
+			return
+		}
+
+		goto('/')
+	}
 </script>
 
 <div class={cn('flex flex-col gap-4', className)} {...restProps}>
@@ -16,7 +39,7 @@
 			<Card.Description>Login with your Apple or Google account</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form class="flex flex-col gap-4">
+			<form class="flex flex-col gap-4" onsubmit={onSubmit}>
 				<div class="flex flex-col gap-4">
 					<Button variant="outline" class="w-full">
 						<AppleIcon class="size-4" />
@@ -33,8 +56,20 @@
 					<span class="bg-card text-muted-foreground relative z-10 px-2"> Or continue with </span>
 				</div>
 				<div class="grid gap-4">
-					<Input label="Email" type="email" placeholder="your-email@example.com" required />
-					<Input label="Password" type="password" placeholder="*********" required />
+					<Input
+						label="Email"
+						type="email"
+						placeholder="your-email@example.com"
+						required
+						bind:value={email}
+					/>
+					<Input
+						label="Password"
+						type="password"
+						placeholder="*********"
+						required
+						bind:value={password}
+					/>
 					<a href="##" class="ml-auto text-sm underline-offset-4 hover:underline -my-2">
 						Forgot your password?
 					</a>

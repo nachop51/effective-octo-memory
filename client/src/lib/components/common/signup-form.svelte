@@ -6,7 +6,34 @@
 	import type { HTMLAttributes } from 'svelte/elements'
 	import AppleIcon from '../icons/apple-icon.svelte'
 	import GoogleIcon from '../icons/google-icon.svelte'
+	import { getUserStore } from '$lib/stores/user.svelte'
 	let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props()
+
+	const userStore = getUserStore()
+
+	let email = $state('')
+	let password = $state('')
+	let confirmPassword = $state('')
+
+	async function handleSubmit(event: Event) {
+		event.preventDefault()
+
+		if (password !== confirmPassword || !email || !password) {
+			return
+		}
+
+		const user = await userStore.signUp({
+			email,
+			password,
+			confirmPassword
+		})
+
+		if (!user) {
+			// Handle signup error (e.g., show a notification)
+			console.error('Signup failed')
+			return
+		}
+	}
 </script>
 
 <div class={cn('flex flex-col gap-4', className)} {...restProps}>
@@ -16,7 +43,7 @@
 			<Card.Description>Continue with your Apple or Google account</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form class="flex flex-col gap-4">
+			<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
 				<div class="flex flex-col gap-4">
 					<Button variant="outline" class="w-full">
 						<AppleIcon class="size-4" />
@@ -33,9 +60,27 @@
 					<span class="bg-card text-muted-foreground relative z-10 px-2"> Or continue with </span>
 				</div>
 				<div class="grid gap-4">
-					<Input label="Email" type="email" placeholder="your-email@example.com" required />
-					<Input label="Password" type="password" placeholder="*********" required />
-					<Input label="Password" type="password" placeholder="*********" required />
+					<Input
+						label="Email"
+						type="email"
+						placeholder="your-email@example.com"
+						required
+						bind:value={email}
+					/>
+					<Input
+						label="Password"
+						type="password"
+						placeholder="*********"
+						required
+						bind:value={password}
+					/>
+					<Input
+						label="Password"
+						type="password"
+						placeholder="*********"
+						required
+						bind:value={confirmPassword}
+					/>
 					<Button type="submit" class="w-full">Login</Button>
 				</div>
 				<div class="text-center text-sm">
