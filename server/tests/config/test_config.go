@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+
 	"server/config"
 
 	"github.com/joho/godotenv"
@@ -27,13 +28,6 @@ func GetTestConfig() *config.Config {
 		},
 		JWTConfig: config.JWTConfig{
 			SecretKey: []byte("test-jwt-secret-key-for-testing"),
-		},
-		Security: config.SecurityConfig{
-			UnprotectedRoutes: map[string]bool{
-				"login":    true,
-				"register": true,
-				"health":   true,
-			},
 		},
 	}
 }

@@ -1,25 +1,38 @@
 package utils
 
 import (
+	"strings"
+
+	"server/pkg/errors"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
-func BindAndValidate[T any](c *fiber.Ctx, validate *validator.Validate) (*T, bool) {
+func BindAndValidate[T any](c *fiber.Ctx, validate *validator.Validate) (*T, error) {
 	var payload T
 
 	if err := c.BodyParser(&payload); err != nil {
-		c.Status(fiber.StatusBadRequest).JSON(err.Error())
-		return nil, false
+		return nil, errors.NewBadRequestError("Validation failed")
 	}
 
 	if err := validate.Struct(payload); err != nil {
-		errors := make(fiber.Map)
-		for _, e := range err.(validator.ValidationErrors) {
-			errors[e.Field()] = e.Tag()
-		}
-		c.Status(fiber.StatusUnprocessableEntity).JSON(errors)
-		return nil, false
+		return nil, formatValidationError(err)
 	}
-	return &payload, true
+
+	return &payload, nil
+}
+
+func formatValidationError(err error) *errors.AppError {
+	var errorMessages []string
+
+	for _, err := range err.(validator.ValidationErrors) {
+		errorMessages = append(errorMessages, strings.ToLower(err.Field()))
+	}
+
+	return &errors.AppError{
+		Code:    422,
+		Message: strings.Join(errorMessages, ", "),
+		Details: errorMessages,
+	}
 }

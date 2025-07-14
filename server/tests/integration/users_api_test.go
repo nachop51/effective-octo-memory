@@ -58,13 +58,6 @@ func (suite *UserAPITestSuite) SetupSuite() {
 		JWTConfig: config.JWTConfig{
 			SecretKey: []byte("test-secret-key"),
 		},
-		Security: config.SecurityConfig{
-			UnprotectedRoutes: map[string]bool{
-				"login":    true,
-				"register": true,
-				"health":   true,
-			},
-		},
 	}
 
 	// Create dependencies

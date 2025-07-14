@@ -1,6 +1,7 @@
 package accounts
 
 import (
+	"server/pkg/errors"
 	"server/pkg/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -22,9 +23,7 @@ func NewAccountHandler(service *AccountService, validator *validator.Validate) *
 func (h *AccountHandler) getAccountsHandler(c *fiber.Ctx) error {
 	accounts, err := h.service.GetAccounts()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to retrieve accounts",
-		})
+		return errors.NewInternalServerError("Failed to retrieve accounts")
 	}
 
 	return c.Status(fiber.StatusOK).JSON(accounts)
@@ -36,16 +35,14 @@ type CreateAccountBody struct {
 }
 
 func (h *AccountHandler) createAccountHandler(c *fiber.Ctx) error {
-	body, ok := utils.BindAndValidate[CreateAccountBody](c, h.validator)
-	if !ok {
-		return nil
+	body, err := utils.BindAndValidate[CreateAccountBody](c, h.validator)
+	if err != nil {
+		return err
 	}
 
 	account, err := h.service.CreateAccount(body)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create account",
-		})
+		return errors.NewInternalServerError("Failed to create account")
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(account)

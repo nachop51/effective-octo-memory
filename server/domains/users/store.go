@@ -24,6 +24,17 @@ func (s *UserStore) GetUsers() ([]*User, error) {
 	return users, nil
 }
 
+func (s *UserStore) GetUserByID(id string) (*User, error) {
+	var user User
+
+	err := s.db.First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (s *UserStore) CreateUser(user *User) error {
 	return s.db.Create(user).Error
 }

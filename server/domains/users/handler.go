@@ -3,6 +3,8 @@ package users
 import (
 	"log"
 
+	"server/config"
+	"server/pkg/errors"
 	"server/pkg/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -13,12 +15,14 @@ import (
 type UserHandler struct {
 	service   *UserService
 	validator *validator.Validate
+	config    *config.Config
 }
 
-func NewUserHandler(service *UserService, validator *validator.Validate) *UserHandler {
+func NewUserHandler(service *UserService, validator *validator.Validate, config *config.Config) *UserHandler {
 	return &UserHandler{
 		service:   service,
 		validator: validator,
+		config:    config,
 	}
 }
 
@@ -44,9 +48,9 @@ type UserBody struct {
 }
 
 func (h *UserHandler) createUserHandler(c *fiber.Ctx) error {
-	body, ok := utils.BindAndValidate[UserBody](c, h.validator)
-	if !ok {
-		return nil
+	body, err := utils.BindAndValidate[UserBody](c, h.validator)
+	if err != nil {
+		return err
 	}
 
 	user, err := h.service.CreateUser(*body)
@@ -66,9 +70,9 @@ type LoginBody struct {
 }
 
 func (h *UserHandler) loginHandler(c *fiber.Ctx) error {
-	creds, ok := utils.BindAndValidate[LoginBody](c, h.validator)
-	if !ok {
-		return nil
+	creds, err := utils.BindAndValidate[LoginBody](c, h.validator)
+	if err != nil {
+		return err
 	}
 
 	user, err := h.service.GetUser(creds.Email)
@@ -89,13 +93,43 @@ func (h *UserHandler) loginHandler(c *fiber.Ctx) error {
 		return err
 	}
 
+	// Set auth cookie with configuration-based settings
+	c.Cookie(&fiber.Cookie{
+		Name:     h.config.Auth.CookieName,
+		Value:    tokenString,
+		HTTPOnly: true,
+		Secure:   !h.config.IsDevelopment(),
+		SameSite: fiber.CookieSameSiteStrictMode,
+		Path:     "/",
+		MaxAge:   h.config.Auth.CookieMaxAge,
+	})
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"token": tokenString,
 	})
 }
 
+func (h *UserHandler) checkAuth(c *fiber.Ctx) error {
+	userId, err := utils.GetUserID(c)
+	if err != nil {
+		return errors.NewUnauthorizedError("Unauthorized")
+	}
+
+	user, err := h.service.store.GetUserByID(userId)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return errors.NewUnauthorizedError("User not found")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(user)
+}
+
 func (h *UserHandler) RegisterRoutes(app *fiber.App) {
 	app.Get("/users", h.getUsers)
-	app.Post("/register", h.createUserHandler)
 	app.Post("/login", h.loginHandler)
+	app.Post("/signup", h.createUserHandler)
+	app.Get("/check", h.checkAuth)
 }

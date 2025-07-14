@@ -21,8 +21,12 @@ type App struct {
 }
 
 func New(dps *config.Dependencies) *App {
+	server := fiber.New(fiber.Config{
+		ErrorHandler: middleware.ErrorHandler,
+	})
+
 	return &App{
-		server:    fiber.New(),
+		server:    server,
 		config:    dps.Config,
 		db:        dps.DB,
 		validator: dps.Validate,
@@ -41,7 +45,7 @@ func (a *App) setupRoutes() {
 	// Users
 	userStore := users.NewUserStore(a.db)
 	userService := users.NewUserService(userStore, a.config.JWTConfig.SecretKey)
-	userHandler := users.NewUserHandler(userService, a.validator)
+	userHandler := users.NewUserHandler(userService, a.validator, a.config)
 	userHandler.RegisterRoutes(a.server)
 
 	// Accounts

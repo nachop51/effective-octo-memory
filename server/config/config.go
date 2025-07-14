@@ -12,6 +12,7 @@ type Config struct {
 	Server    ServerConfig   `envPrefix:"SERVER_"`
 	Database  DatabaseConfig `envPrefix:"DB_"`
 	JWTConfig JWTConfig
+	Auth      AuthConfig
 }
 
 type ServerConfig struct {
@@ -31,6 +32,11 @@ type DatabaseConfig struct {
 
 type JWTConfig struct {
 	SecretKey []byte
+}
+
+type AuthConfig struct {
+	CookieName   string `env:"COOKIE_NAME" envDefault:"effective_octo_auth_token"`
+	CookieMaxAge int    `env:"COOKIE_MAX_AGE" envDefault:"2592000"` // 30 days in seconds
 }
 
 func Load() (*Config, error) {

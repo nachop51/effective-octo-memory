@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,8 +20,6 @@ func NewAuthMiddleware(jwtKey []byte) fiber.Handler {
 		path := c.Path()
 
 		path = strings.TrimRight(path, "/")
-
-		fmt.Println("Checking path:", path)
 
 		if _, ok := unprotectedRoutes[path]; ok {
 			return c.Next()

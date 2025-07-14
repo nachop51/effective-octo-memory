@@ -1,10 +1,10 @@
 package users
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/nrednav/cuid2"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -31,6 +31,7 @@ func (s *UserService) CreateUser(body UserBody) (*User, error) {
 	}
 
 	user := &User{
+		ID:        cuid2.Generate(),
 		FirstName: body.FirstName,
 		LastName:  body.LastName,
 		Email:     body.Email,
@@ -54,7 +55,7 @@ func (s *UserService) GenerateJWT(user *User) (string, error) {
 	now := time.Now()
 
 	claims := jwt.RegisteredClaims{
-		Subject:   strconv.Itoa(int(user.ID)),
+		Subject:   user.ID,
 		Issuer:    "effective-octo-memory",
 		IssuedAt:  jwt.NewNumericDate(now),
 		ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 24 * 30)),
