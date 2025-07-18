@@ -11,6 +11,7 @@ import (
 	"server/app"
 	"server/config"
 	"server/domains/users"
+	test_config "server/tests/config"
 	"server/tests/helpers"
 
 	"github.com/go-playground/validator/v10"
@@ -41,24 +42,7 @@ func (suite *UserAPITestSuite) SetupSuite() {
 	suite.Require().NoError(err)
 
 	// Setup test config
-	appConfig := &config.Config{
-		Server: config.ServerConfig{
-			Host: "localhost",
-			Port: 8080,
-			Env:  "test",
-		},
-		Database: config.DatabaseConfig{
-			Host:     "localhost",
-			Port:     5432,
-			Username: "user",
-			Password: "password",
-			Name:     "test_db",
-			SSLMode:  "disable",
-		},
-		JWTConfig: config.JWTConfig{
-			SecretKey: []byte("test-secret-key"),
-		},
-	}
+	appConfig := test_config.GetTestConfig()
 
 	// Create dependencies
 	deps := &config.Dependencies{

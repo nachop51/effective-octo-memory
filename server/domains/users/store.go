@@ -1,6 +1,10 @@
 package users
 
-import "gorm.io/gorm"
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
 
 type UserStore struct {
 	db *gorm.DB
@@ -27,7 +31,7 @@ func (s *UserStore) GetUsers() ([]*User, error) {
 func (s *UserStore) GetUserByID(id string) (*User, error) {
 	var user User
 
-	err := s.db.First(&user, id).Error
+	err := s.db.First(&user, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +47,9 @@ func (s *UserStore) GetUserByEmail(email string) (*User, error) {
 	var user User
 
 	err := s.db.Where("email = ?", email).First(&user).Error
-	if err != nil {
-		return nil, err
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
 	}
 
 	return &user, nil

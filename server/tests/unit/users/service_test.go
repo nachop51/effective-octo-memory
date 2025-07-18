@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"server/domains/users"
+	test_config "server/tests/config"
 	"server/tests/mocks"
 
 	"github.com/stretchr/testify/assert"
@@ -15,12 +16,13 @@ import (
 
 func TestUserService_GetUsers(t *testing.T) {
 	// Arrange
+	cfg := test_config.GetTestConfig()
 	mockRepo := new(mocks.MockUserRepository)
-	service := users.NewUserService(mockRepo, []byte("test-secret"))
+	service := users.NewUserService(mockRepo, cfg)
 
 	expectedUsers := []*users.User{
 		{
-			ID:        1,
+			ID:        "random cuid2",
 			FirstName: "John",
 			LastName:  "Doe",
 			Email:     "john@example.com",
@@ -29,7 +31,7 @@ func TestUserService_GetUsers(t *testing.T) {
 			UpdatedAt: time.Now(),
 		},
 		{
-			ID:        2,
+			ID:        "random cuid2 - 1",
 			FirstName: "Jane",
 			LastName:  "Smith",
 			Email:     "jane@example.com",
@@ -53,8 +55,9 @@ func TestUserService_GetUsers(t *testing.T) {
 
 func TestUserService_GetUsers_Error(t *testing.T) {
 	// Arrange
+	cfg := test_config.GetTestConfig()
 	mockRepo := new(mocks.MockUserRepository)
-	service := users.NewUserService(mockRepo, []byte("test-secret"))
+	service := users.NewUserService(mockRepo, cfg)
 
 	mockRepo.On("GetUsers").Return(([]*users.User)(nil), assert.AnError)
 
@@ -69,8 +72,9 @@ func TestUserService_GetUsers_Error(t *testing.T) {
 
 func TestUserService_CreateUser_Success(t *testing.T) {
 	// Arrange
+	cfg := test_config.GetTestConfig()
 	mockRepo := new(mocks.MockUserRepository)
-	service := users.NewUserService(mockRepo, []byte("test-secret"))
+	service := users.NewUserService(mockRepo, cfg)
 
 	userBody := users.UserBody{
 		FirstName: "John",
@@ -101,8 +105,9 @@ func TestUserService_CreateUser_Success(t *testing.T) {
 
 func TestUserService_CreateUser_RepositoryError(t *testing.T) {
 	// Arrange
+	cfg := test_config.GetTestConfig()
 	mockRepo := new(mocks.MockUserRepository)
-	service := users.NewUserService(mockRepo, []byte("test-secret"))
+	service := users.NewUserService(mockRepo, cfg)
 
 	userBody := users.UserBody{
 		FirstName: "John",
@@ -124,11 +129,12 @@ func TestUserService_CreateUser_RepositoryError(t *testing.T) {
 
 func TestUserService_GetUser_Success(t *testing.T) {
 	// Arrange
+	cfg := test_config.GetTestConfig()
 	mockRepo := new(mocks.MockUserRepository)
-	service := users.NewUserService(mockRepo, []byte("test-secret"))
+	service := users.NewUserService(mockRepo, cfg)
 
 	expectedUser := &users.User{
-		ID:        1,
+		ID:        "random cuid2 - 2",
 		FirstName: "John",
 		LastName:  "Doe",
 		Email:     "john@example.com",
@@ -141,7 +147,7 @@ func TestUserService_GetUser_Success(t *testing.T) {
 	mockRepo.On("GetUserByEmail", email).Return(expectedUser, nil)
 
 	// Act
-	result, err := service.GetUser(email)
+	result, err := service.GetUserByEmail(email)
 
 	// Assert
 	assert.NoError(t, err)
@@ -151,14 +157,15 @@ func TestUserService_GetUser_Success(t *testing.T) {
 
 func TestUserService_GetUser_NotFound(t *testing.T) {
 	// Arrange
+	cfg := test_config.GetTestConfig()
 	mockRepo := new(mocks.MockUserRepository)
-	service := users.NewUserService(mockRepo, []byte("test-secret"))
+	service := users.NewUserService(mockRepo, cfg)
 
 	email := "nonexistent@example.com"
 	mockRepo.On("GetUserByEmail", email).Return((*users.User)(nil), assert.AnError)
 
 	// Act
-	result, err := service.GetUser(email)
+	result, err := service.GetUserByEmail(email)
 
 	// Assert
 	assert.Error(t, err)
@@ -168,12 +175,12 @@ func TestUserService_GetUser_NotFound(t *testing.T) {
 
 func TestUserService_GenerateJWT_Success(t *testing.T) {
 	// Arrange
+	cfg := test_config.GetTestConfig()
 	mockRepo := new(mocks.MockUserRepository)
-	jwtSecret := []byte("test-secret-key")
-	service := users.NewUserService(mockRepo, jwtSecret)
+	service := users.NewUserService(mockRepo, cfg)
 
 	user := &users.User{
-		ID:        1,
+		ID:        "random cuid2 - 3",
 		FirstName: "John",
 		LastName:  "Doe",
 		Email:     "john@example.com",
@@ -195,11 +202,12 @@ func TestUserService_GenerateJWT_Success(t *testing.T) {
 
 func TestUserService_GenerateJWT_EmptySecret(t *testing.T) {
 	// Arrange
+	cfg := test_config.GetTestConfig()
 	mockRepo := new(mocks.MockUserRepository)
-	service := users.NewUserService(mockRepo, []byte(""))
+	service := users.NewUserService(mockRepo, cfg)
 
 	user := &users.User{
-		ID:        1,
+		ID:        "random cuid2 - 4",
 		FirstName: "John",
 		LastName:  "Doe",
 		Email:     "john@example.com",

@@ -9,7 +9,7 @@ import (
 func GetUserID(c *fiber.Ctx) (string, error) {
 	UserId, ok := c.Locals("UserId").(string)
 
-	if !ok {
+	if !ok || UserId == "" {
 		return "", errors.NewUnauthorizedError("User ID not found in context")
 	}
 

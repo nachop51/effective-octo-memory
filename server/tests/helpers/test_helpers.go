@@ -14,7 +14,7 @@ import (
 // CreateTestUser creates a test user with default values
 func CreateTestUser() *users.User {
 	return &users.User{
-		ID:        1,
+		ID:        "random cuid2",
 		FirstName: "John",
 		LastName:  "Doe",
 		Email:     "john@example.com",
@@ -33,7 +33,7 @@ func CreateTestUserWithEmail(email string) *users.User {
 }
 
 // CreateTestUserWithID creates a test user with a specific ID
-func CreateTestUserWithID(id uint) *users.User {
+func CreateTestUserWithID(id string) *users.User {
 	user := CreateTestUser()
 	user.ID = id
 	return user
@@ -43,7 +43,7 @@ func CreateTestUserWithID(id uint) *users.User {
 func CreateTestUsers(count int) []*users.User {
 	users := make([]*users.User, count)
 	for i := range count {
-		users[i] = CreateTestUserWithID(uint(i + 1))
+		users[i] = CreateTestUserWithID("random cuid2" + string(i))
 		users[i].Email = "user" + string(rune(i+'0')) + "@example.com"
 	}
 	return users

@@ -31,3 +31,12 @@ func (m *MockUserRepository) GetUserByEmail(email string) (*users.User, error) {
 	}
 	return args.Get(0).(*users.User), args.Error(1)
 }
+
+// GetUserByID mocks the GetUserByID method
+func (m *MockUserRepository) GetUserByID(id string) (*users.User, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*users.User), args.Error(1)
+}

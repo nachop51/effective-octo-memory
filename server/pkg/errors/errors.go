@@ -49,6 +49,13 @@ func NewInternalServerError(message string) *AppError {
 	}
 }
 
+func NewConflictError(message string) *AppError {
+	return &AppError{
+		Code:    fiber.StatusConflict,
+		Message: message,
+	}
+}
+
 func NewValidationError(message string, details any) *AppError {
 	return &AppError{
 		Code:    fiber.StatusUnprocessableEntity,

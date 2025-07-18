@@ -40,17 +40,27 @@ func (h *UserHandler) getUsers(c *fiber.Ctx) error {
 }
 
 type UserBody struct {
-	FirstName            string `json:"firstName" validate:"required"`
-	LastName             string `json:"lastName" validate:"required"`
+	FirstName            string `json:"firstName" validate:"required,min=2,max=30"`
+	LastName             string `json:"lastName" validate:"required,min=2,max=30"`
 	Email                string `json:"email" validate:"required,email"`
-	Password             string `json:"password" validate:"required"`
-	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
+	Password             string `json:"password" validate:"required,min=6,max=40"`
+	PasswordConfirmation string `json:"confirmPassword" validate:"required,eqfield=Password"`
 }
 
-func (h *UserHandler) createUserHandler(c *fiber.Ctx) error {
+func (h *UserHandler) handleSignUp(c *fiber.Ctx) error {
 	body, err := utils.BindAndValidate[UserBody](c, h.validator)
 	if err != nil {
 		return err
+	}
+
+	existingUser, err := h.service.GetUserByEmail(body.Email)
+	if err != nil {
+		log.Println("Error checking existing user:", err)
+		return errors.NewInternalServerError("Failed to check existing user")
+	}
+
+	if existingUser != nil {
+		return errors.NewConflictError("User already exists")
 	}
 
 	user, err := h.service.CreateUser(*body)
@@ -61,7 +71,15 @@ func (h *UserHandler) createUserHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(user)
+	token, err := h.service.GenerateJWT(user)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"access_token": token,
+		"user":         user,
+	})
 }
 
 type LoginBody struct {
@@ -75,7 +93,7 @@ func (h *UserHandler) loginHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := h.service.GetUser(creds.Email)
+	user, err := h.service.GetUserByEmail(creds.Email)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Invalid credentials",
@@ -88,24 +106,14 @@ func (h *UserHandler) loginHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	tokenString, err := h.service.GenerateJWT(user)
+	token, err := h.service.GenerateJWT(user)
 	if err != nil {
 		return err
 	}
 
-	// Set auth cookie with configuration-based settings
-	c.Cookie(&fiber.Cookie{
-		Name:     h.config.Auth.CookieName,
-		Value:    tokenString,
-		HTTPOnly: true,
-		Secure:   !h.config.IsDevelopment(),
-		SameSite: fiber.CookieSameSiteStrictMode,
-		Path:     "/",
-		MaxAge:   h.config.Auth.CookieMaxAge,
-	})
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"token": tokenString,
+		"access_token": token,
+		"user":         user,
 	})
 }
 
@@ -130,6 +138,6 @@ func (h *UserHandler) checkAuth(c *fiber.Ctx) error {
 func (h *UserHandler) RegisterRoutes(app *fiber.App) {
 	app.Get("/users", h.getUsers)
 	app.Post("/login", h.loginHandler)
-	app.Post("/signup", h.createUserHandler)
+	app.Post("/signup", h.handleSignUp)
 	app.Get("/check", h.checkAuth)
 }

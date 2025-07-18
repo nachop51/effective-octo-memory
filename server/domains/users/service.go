@@ -3,6 +3,8 @@ package users
 import (
 	"time"
 
+	"server/config"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/nrednav/cuid2"
 	"golang.org/x/crypto/bcrypt"
@@ -10,14 +12,19 @@ import (
 
 type UserService struct {
 	store  UserRepository
-	jwtKey []byte
+	config *config.Config
 }
 
-func NewUserService(store UserRepository, jwtKey []byte) *UserService {
+func NewUserService(store UserRepository, config *config.Config) *UserService {
 	return &UserService{
 		store:  store,
-		jwtKey: jwtKey,
+		config: config,
 	}
+}
+
+type CustomClaims struct {
+	jwt.RegisteredClaims
+	User map[string]string `json:"user"`
 }
 
 func (s *UserService) GetUsers() ([]*User, error) {
@@ -47,21 +54,32 @@ func (s *UserService) CreateUser(body UserBody) (*User, error) {
 	return user, nil
 }
 
-func (s *UserService) GetUser(email string) (*User, error) {
+func (s *UserService) GetUserByID(id string) (*User, error) {
+	return s.store.GetUserByID(id)
+}
+
+func (s *UserService) GetUserByEmail(email string) (*User, error) {
 	return s.store.GetUserByEmail(email)
 }
 
 func (s *UserService) GenerateJWT(user *User) (string, error) {
 	now := time.Now()
 
-	claims := jwt.RegisteredClaims{
-		Subject:   user.ID,
-		Issuer:    "effective-octo-memory",
-		IssuedAt:  jwt.NewNumericDate(now),
-		ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 24 * 30)),
+	token := jwt.New(jwt.SigningMethodHS256)
+	token.Claims = &CustomClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   user.ID,
+			Issuer:    "effective-octo-memory",
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(30 * 24 * time.Hour)),
+		},
+		User: map[string]string{
+			"id":        user.ID,
+			"firstName": user.FirstName,
+			"lastName":  user.LastName,
+			"email":     user.Email,
+		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return token.SignedString(s.jwtKey)
+	return token.SignedString(s.config.Auth.SecretKey)
 }

@@ -9,10 +9,9 @@ import (
 )
 
 type Config struct {
-	Server    ServerConfig   `envPrefix:"SERVER_"`
-	Database  DatabaseConfig `envPrefix:"DB_"`
-	JWTConfig JWTConfig
-	Auth      AuthConfig
+	Server   ServerConfig   `envPrefix:"SERVER_"`
+	Database DatabaseConfig `envPrefix:"DB_"`
+	Auth     AuthConfig
 }
 
 type ServerConfig struct {
@@ -29,14 +28,10 @@ type DatabaseConfig struct {
 	Name     string `env:"NAME" envDefault:"mydb"`
 	SSLMode  string `env:"SSL_MODE" envDefault:"disable"`
 }
-
-type JWTConfig struct {
-	SecretKey []byte
-}
-
 type AuthConfig struct {
-	CookieName   string `env:"COOKIE_NAME" envDefault:"effective_octo_auth_token"`
-	CookieMaxAge int    `env:"COOKIE_MAX_AGE" envDefault:"2592000"` // 30 days in seconds
+	SecretKey  []byte
+	CookieName string `env:"COOKIE_NAME" envDefault:"effective_octo_auth_token"`
+	// CookieExpires time.Duration
 }
 
 func Load() (*Config, error) {
@@ -51,19 +46,39 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	if err := cfg.parseJWTConfig(); err != nil {
+	if err := cfg.ParseJWTConfig(); err != nil {
 		return nil, err
 	}
+
+	// if err := cfg.parseCookieExpires(); err != nil {
+	// 	return nil, err
+	// }
 
 	return cfg, nil
 }
 
-func (c *Config) parseJWTConfig() error {
+// func (c *Config) parseCookieExpires() error {
+// 	timeInSeconds := os.Getenv("COOKIE_EXPIRES")
+// 	if timeInSeconds == "" {
+// 		return fmt.Errorf("COOKIE_EXPIRES is not set")
+// 	}
+
+// 	val, err := strconv.ParseInt(timeInSeconds, 10, 64)
+// 	if err != nil {
+// 		return fmt.Errorf("invalid COOKIE_EXPIRES value: %v", err)
+// 	}
+
+// 	c.Auth.CookieExpires = time.Duration(val) * time.Second
+
+// 	return nil
+// }
+
+func (c *Config) ParseJWTConfig() error {
 	secretKey := os.Getenv("JWT_SECRET_KEY")
 	if secretKey == "" {
 		return fmt.Errorf("JWT_SECRET_KEY is not set")
 	}
-	c.JWTConfig.SecretKey = []byte(secretKey)
+	c.Auth.SecretKey = []byte(secretKey)
 	return nil
 }
 

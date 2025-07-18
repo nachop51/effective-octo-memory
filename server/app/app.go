@@ -34,7 +34,7 @@ func New(dps *config.Dependencies) *App {
 }
 
 func (a *App) setupMiddleware() {
-	middleware.SetupMiddlewares(a.server, a.config.JWTConfig.SecretKey)
+	middleware.SetupMiddlewares(a.server, a.config.Auth.SecretKey, a.config.Auth.CookieName)
 }
 
 func (a *App) setupRoutes() {
@@ -44,7 +44,7 @@ func (a *App) setupRoutes() {
 
 	// Users
 	userStore := users.NewUserStore(a.db)
-	userService := users.NewUserService(userStore, a.config.JWTConfig.SecretKey)
+	userService := users.NewUserService(userStore, a.config)
 	userHandler := users.NewUserHandler(userService, a.validator, a.config)
 	userHandler.RegisterRoutes(a.server)
 

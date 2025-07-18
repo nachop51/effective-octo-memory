@@ -27,12 +27,29 @@ func formatValidationError(err error) *errors.AppError {
 	var errorMessages []string
 
 	for _, err := range err.(validator.ValidationErrors) {
-		errorMessages = append(errorMessages, strings.ToLower(err.Field()))
+		errorMessages = append(errorMessages, getErrorMessage(err.Tag()))
 	}
 
 	return &errors.AppError{
 		Code:    422,
 		Message: strings.Join(errorMessages, ", "),
 		Details: errorMessages,
+	}
+}
+
+func getErrorMessage(err string) string {
+	switch err {
+	case "required":
+		return "This field is required"
+	case "email":
+		return "Invalid email format"
+	case "min":
+		return "Value is too short"
+	case "max":
+		return "Value is too long"
+	case "eqfield":
+		return "Passwords do not match"
+	default:
+		return "Validation error"
 	}
 }
