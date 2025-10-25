@@ -38,7 +38,7 @@ export abstract class AccountService {
     name: Account['name']
     number: Account['number']
   }) {
-    const account = await db
+    const [account] = await db
       .insert(accounts)
       .values({
         userId,
@@ -47,7 +47,7 @@ export abstract class AccountService {
       })
       .returning()
 
-    return account[0]
+    return account
   }
 
   static async updateAccount({
@@ -61,13 +61,13 @@ export abstract class AccountService {
     number: Account['number']
     name: Account['name']
   }) {
-    const account = await db
+    const [account] = await db
       .update(accounts)
       .set({ name, number })
       .where(and(eq(accounts.userId, userId), eq(accounts.id, accountId)))
       .returning()
 
-    if (account.length === 0) {
+    if (!account) {
       throw new NotFoundError('Account not found')
     }
 

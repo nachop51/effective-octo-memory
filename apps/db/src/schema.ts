@@ -1,6 +1,7 @@
 import { numeric, pgTable, text, check, varchar } from 'drizzle-orm/pg-core'
 import { createdAt, cuid, updatedAt } from './custom-types'
 import { relations, sql } from 'drizzle-orm'
+import { accountCurrencies, DEFAULT_CURRENCY } from './consts'
 
 export const users = pgTable('users', {
   id: cuid(),
@@ -23,7 +24,9 @@ export const accounts = pgTable('accounts', {
   balance: numeric({ precision: 12, scale: 2 })
     .default(sql`0`)
     .notNull(),
-  currency: varchar({ length: 3 }).default('USD').notNull(),
+  currency: varchar({ length: 3, enum: accountCurrencies })
+    .default(DEFAULT_CURRENCY)
+    .notNull(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 })
@@ -37,7 +40,7 @@ export const transactions = pgTable(
       .references(() => accounts.id),
     amount: numeric({ precision: 12, scale: 2 }).notNull(),
     type: varchar({ enum: ['income', 'expense', 'transfer'] }).notNull(),
-    description: varchar().notNull(),
+    description: varchar(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     categoryId: varchar().references(() => categories.id),

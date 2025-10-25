@@ -1,5 +1,5 @@
-import { db, User, users } from 'db'
-import { NotFoundError } from 'elysia'
+import { db, users } from 'db'
+import { InternalServerError, NotFoundError } from 'elysia'
 import { ConflictError } from './errors'
 
 export abstract class AuthService {
@@ -13,6 +13,8 @@ export abstract class AuthService {
     const user = await db.query.users.findFirst({
       where: (t, { eq }) => eq(t.email, email),
       columns: {
+        id: true,
+        email: true,
         password: true,
       },
     })
@@ -25,10 +27,7 @@ export abstract class AuthService {
       throw new NotFoundError('Invalid credentials')
     }
 
-    return {
-      email,
-      token: 'fake-jwt-token',
-    }
+    return user
   }
 
   static async signUp({
@@ -40,6 +39,9 @@ export abstract class AuthService {
   }) {
     const user = await db.query.users.findFirst({
       where: (t, { eq }) => eq(t.email, email),
+      columns: {
+        id: true,
+      },
     })
 
     if (user) {
@@ -48,7 +50,7 @@ export abstract class AuthService {
 
     const hashedPassword = await Bun.password.hash(password)
 
-    const newUser = await db
+    const [newUser] = await db
       .insert(users)
       .values({
         email,
@@ -56,10 +58,10 @@ export abstract class AuthService {
       })
       .returning()
 
-    return newUser[0]
-  }
+    if (!newUser) {
+      throw new InternalServerError('Something went wrong when creating user')
+    }
 
-  static async generateToken(user: User) {
-    console.log({ user })
+    return newUser
   }
 }

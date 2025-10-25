@@ -1,37 +1,35 @@
 import Elysia, { t } from 'elysia'
 import { AccountService } from './service'
+import { AuthMiddleware } from '../auth/middleware'
+import { AccountCurrency } from 'db'
 
 export const accounts = new Elysia({ prefix: '/accounts' })
-  .get('/', () => {
+  .use(AuthMiddleware)
+  .get('/', ({ token: { user } }) => {
     const accounts = AccountService.getUserAccounts({
-      userId: '1',
+      userId: user.id,
     })
 
     return accounts
   })
-  .get(
-    '/:id',
-    ({ params }) => {
-      const account = AccountService.getAccountById({
-        accountId: params.id,
-        userId: '1',
-      })
+  .get('/:id', ({ params, token: { user } }) => {
+    const account = AccountService.getAccountById({
+      accountId: params.id,
+      userId: user.id,
+    })
 
-      return account
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-    }
-  )
+    return account
+  })
   .post(
     '/',
-    async ({ body: { name, number = null, currency = 'MUR' } }) => {
+    async ({
+      body: { name, number = null, currency = 'MUR' },
+      token: { user },
+    }) => {
       console.log({ name, number, currency })
 
       const account = await AccountService.createAccount({
-        userId: '1',
+        userId: user.id,
         number,
         name,
       })
@@ -40,17 +38,11 @@ export const accounts = new Elysia({ prefix: '/accounts' })
     },
     {
       body: t.Object({
-        name: t.String(),
+        name: t.String({ minLength: 1 }),
         number: t.Optional(t.String()),
-        currency: t.Optional(
-          t.Enum({
-            USD: 'USD',
-            EUR: 'EUR',
-            GBP: 'GBP',
-            MUR: 'MUR',
-          })
-        ),
+        currency: t.Optional(t.Enum(AccountCurrency)),
       }),
     }
   )
   .patch('/:id', ({ params }) => `Update account with ID: ${params.id}`)
+  .delete('/:id', ({ params }) => `Delete account with ID: ${params.id}`)
