@@ -1,0 +1,26 @@
+### Sign In User
+POST http://localhost:3000/auth/signin
+Content-Type: application/json
+
+{
+  "email": "test2@test.com",
+  "password": "testtest"
+}
+
+
+### Sign Up User
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+
+{
+  "email": "test2@test.com",
+  "password": "testtest",
+  "confirmPassword": "testtest"
+}
+
+### Get Current User
+GET http://localhost:3000/auth/check
+
+
+### Sign Out User
+DELETE http://localhost:3000/auth/signout

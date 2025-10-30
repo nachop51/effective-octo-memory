@@ -1,0 +1,17 @@
+### Request to get all accounts
+GET http://localhost:3000/accounts
+Content-Type: application/json
+
+### Request to get a specific account by ID
+GET http://localhost:3000/accounts/asrtasrt
+Content-Type: application/json
+
+### Request to create a new account
+POST http://localhost:3000/accounts
+Content-Type: application/json
+
+{
+  "name": "New Account",
+  "number": "Standard",
+  "currency": "MUR"
+}

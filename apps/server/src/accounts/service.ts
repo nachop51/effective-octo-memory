@@ -33,10 +33,14 @@ export abstract class AccountService {
     userId,
     name,
     number,
+    currency,
+    initialBalance = '0',
   }: {
     userId: User['id']
     name: Account['name']
     number: Account['number']
+    currency: Account['currency']
+    initialBalance: Account['balance']
   }) {
     const [account] = await db
       .insert(accounts)
@@ -44,6 +48,8 @@ export abstract class AccountService {
         userId,
         name,
         number,
+        balance: initialBalance,
+        currency,
       })
       .returning()
 

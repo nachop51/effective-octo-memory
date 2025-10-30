@@ -23,15 +23,20 @@ export const accounts = new Elysia({ prefix: '/accounts' })
   .post(
     '/',
     async ({
-      body: { name, number = null, currency = 'MUR' },
+      body: {
+        name,
+        accountNumber = null,
+        initialBalance = null,
+        currency = 'MUR',
+      },
       token: { user },
     }) => {
-      console.log({ name, number, currency })
-
       const account = await AccountService.createAccount({
         userId: user.id,
-        number,
         name,
+        number: accountNumber,
+        currency: currency as AccountCurrency,
+        initialBalance: initialBalance?.toString() || '0',
       })
 
       return account
@@ -39,7 +44,8 @@ export const accounts = new Elysia({ prefix: '/accounts' })
     {
       body: t.Object({
         name: t.String({ minLength: 1 }),
-        number: t.Optional(t.String()),
+        accountNumber: t.Optional(t.String()),
+        initialBalance: t.Optional(t.Number()),
         currency: t.Optional(t.Enum(AccountCurrency)),
       }),
     }

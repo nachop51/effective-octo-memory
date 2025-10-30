@@ -1,6 +1,6 @@
 import { db, users } from 'db'
-import { InternalServerError, NotFoundError } from 'elysia'
-import { ConflictError } from './errors'
+import { InternalServerError } from 'elysia'
+import { ConflictError, UnauthorizedError } from './errors'
 
 export abstract class AuthService {
   static async signIn({
@@ -20,11 +20,11 @@ export abstract class AuthService {
     })
 
     if (!user) {
-      throw new NotFoundError('Invalid credentials')
+      throw new UnauthorizedError('Invalid credentials')
     }
 
     if (!(await Bun.password.verify(password, user.password))) {
-      throw new NotFoundError('Invalid credentials')
+      throw new UnauthorizedError('Invalid credentials')
     }
 
     return user

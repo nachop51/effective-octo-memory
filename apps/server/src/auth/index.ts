@@ -22,6 +22,7 @@ const createCookieOptions = (token: string) => ({
   httpOnly: true,
   path: '/',
   secure: Bun.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
 })
 
 export const auth = new Elysia({ prefix: '/auth' })
@@ -98,3 +99,15 @@ export const auth = new Elysia({ prefix: '/auth' })
   )
   .use(AuthMiddleware)
   .get('/check', ({ token }) => token.user)
+  .delete('/signout', ({ cookie: { auth } }) => {
+    auth.set({
+      value: '',
+      expires: new Date(0),
+      httpOnly: true,
+      path: '/',
+      secure: Bun.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    })
+
+    return { message: 'Signed out successfully' }
+  })
