@@ -20,12 +20,18 @@ export const AuthMiddleware = new Elysia({ name: 'Auth.Middleware' })
   )
   .derive(
     { as: 'global' },
-    async ({ headers: { 'api-key': apiKey }, cookie: { auth }, jwt }) => {
+    async ({ headers: { Authorization }, cookie: { auth }, jwt }) => {
       if (!auth.value) {
         throw new UnauthorizedError('Authentication cookie is missing')
       }
 
-      const token = (await jwt.verify(auth.value as string)) as AuthToken
+      const tokenStr = auth.value ?? Authorization?.replace('Bearer ', '')
+
+      if (!tokenStr || typeof tokenStr !== 'string' || tokenStr.length === 0) {
+        throw new UnauthorizedError('Authentication token is missing')
+      }
+
+      const token = (await jwt.verify(tokenStr)) as AuthToken
 
       if (!token) {
         throw new UnauthorizedError('Invalid authentication token')
