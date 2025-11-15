@@ -40,13 +40,17 @@ export const auth = new Elysia({ prefix: '/auth' })
       }),
     }
   )
-  .post('/signup', async ({ body }) => {
-    const user = await AuthService.signUp(body)
+  .post(
+    '/signup',
+    async ({ body }) => {
+      const user = await AuthService.signUp(body)
 
-    return user
-  }, {
-    body: t.Object({
-      email: t.String({ format: 'email' }),
-      password: t.String(),
-    }),
-  })
+      return user
+    },
+    {
+      body: t.Object({
+        email: t.String({ format: 'email' }),
+        password: t.String(),
+      }),
+    }
+  )

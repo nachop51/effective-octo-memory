@@ -1,27 +1,27 @@
 CREATE TABLE "accounts" (
-	"id" text PRIMARY KEY NOT NULL,
-	"name" text NOT NULL,
-	"userId" text NOT NULL,
+	"id" varchar PRIMARY KEY NOT NULL,
+	"name" varchar NOT NULL,
+	"userId" varchar NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "transactions" (
-	"id" text PRIMARY KEY NOT NULL,
-	"accountId" text NOT NULL,
+	"id" varchar PRIMARY KEY NOT NULL,
+	"accountId" varchar NOT NULL,
 	"amount" numeric(12, 2) NOT NULL,
-	"type" text NOT NULL,
-	"description" text NOT NULL,
+	"type" varchar NOT NULL,
+	"description" varchar NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "amount_positive" CHECK ("transactions"."amount" >= 1)
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
-	"id" text PRIMARY KEY NOT NULL,
-	"email" text NOT NULL,
+	"id" varchar PRIMARY KEY NOT NULL,
+	"email" varchar NOT NULL,
 	"password" text NOT NULL,
-	"role" text DEFAULT 'user' NOT NULL,
+	"role" varchar DEFAULT 'user' NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email")
