@@ -1,35 +1,14 @@
+import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
-import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
 
+// https://vite.dev/config/
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
-	test: {
-		projects: [
-			{
-				extends: './vite.config.ts',
-				test: {
-					name: 'client',
-					environment: 'browser',
-					browser: {
-						enabled: true,
-						provider: 'playwright',
-						instances: [{ browser: 'chromium' }]
-					},
-					include: ['tests/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: [],
-					setupFiles: ['./vitest-setup-client.ts']
-				}
-			},
-			{
-				extends: './vite.config.ts',
-				test: {
-					name: 'server',
-					environment: 'node',
-					include: ['tests/**/*.{test,spec}.{js,ts}'],
-					exclude: []
-				}
-			}
-		]
-	}
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
 })
