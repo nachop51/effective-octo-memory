@@ -1,6 +1,7 @@
 import { Route, Switch } from 'wouter'
-import { LoginForm } from './components/login-form'
-import './App.css'
+import { LoginForm } from '@/components/login-form'
+import { SignupForm } from '@/components/signup-form'
+import '@/App.css'
 
 function App() {
   return (
@@ -12,7 +13,9 @@ function App() {
           <LoginForm />
         </Route>
 
-        <Route path="/signup">SignUp</Route>
+        <Route path="/signup">
+          <SignupForm />
+        </Route>
 
         <Route>404: No such page!</Route>
       </Switch>

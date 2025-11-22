@@ -17,16 +17,23 @@ import { useState } from 'react'
 import api from '@/lib/api/effective'
 
 // Schema de validación con Zod
-const loginSchema = z.object({
-  email: z.email('Please enter a valid email address'),
-  password: z
-    .string()
-    .min(8, 'The password needs to be at least 8 characters long'),
-})
+const signupSchema = z
+  .object({
+    email: z.email('Please enter a valid email address'),
+    password: z
+      .string()
+      .min(8, 'The password needs to be at least 8 characters long'),
+    confirmPassword: z
+      .string()
+      .min(8, 'The password needs to be at least 8 characters long'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+  })
 
-type LoginFormData = z.infer<typeof loginSchema>
+type SignupFormData = z.infer<typeof signupSchema>
 
-export function LoginForm({
+export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
@@ -38,23 +45,25 @@ export function LoginForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       email: '',
       password: '',
+      confirmPassword: '',
     },
   })
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true)
     setErrorMessage(null)
 
     try {
-      const response = await api.post('auth/signin', {
+      const response = await api.post('auth/signup', {
         json: {
           email: data.email,
           password: data.password,
+          confirmPassword: data.confirmPassword,
         },
       })
 
@@ -63,7 +72,7 @@ export function LoginForm({
         navigate('/')
       }
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('Signup error:', error)
     } finally {
       setIsLoading(false)
     }
@@ -92,7 +101,7 @@ export function LoginForm({
               Welcome to Effective Octo Memory
             </h1>
             <FieldDescription>
-              Don&apos;t have an account? <Link href="/signup">Sign up</Link>
+              Do you have an account? <Link href="/login">Login</Link>
             </FieldDescription>
           </div>
 
@@ -135,24 +144,31 @@ export function LoginForm({
           </Field>
 
           <Field>
+            <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="********"
+              {...register('confirmPassword')}
+              aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+            />
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-600 mt-1">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </Field>
+
+          <Field>
             <Button
               type="button"
               onClick={handleSubmit(onSubmit)}
               disabled={isLoading}
               className="w-full"
             >
-              {isLoading ? 'Initializing session...' : 'Login'}
+              {isLoading ? 'Creating account...' : 'Sign Up'}
             </Button>
           </Field>
-
-          <div className="text-center">
-            <a
-              href="#"
-              className="text-sm text-muted-foreground hover:text-primary"
-            >
-              ¿Olvidaste tu contraseña?
-            </a>
-          </div>
         </FieldGroup>
       </div>
     </div>
