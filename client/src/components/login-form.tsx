@@ -1,7 +1,6 @@
 import { GalleryVerticalEnd } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -15,16 +14,9 @@ import { Input } from '@/components/ui/input'
 import { Link, useLocation } from 'wouter'
 import { useState } from 'react'
 import api from '@/lib/api/effective'
-
-// Schema de validación con Zod
-const loginSchema = z.object({
-  email: z.email('Please enter a valid email address'),
-  password: z
-    .string()
-    .min(8, 'The password needs to be at least 8 characters long'),
-})
-
-type LoginFormData = z.infer<typeof loginSchema>
+import { useAuthStore } from '@/lib/stores/auth'
+import { loginSchema, type LoginFormData } from '@/lib/schemas'
+import type { AuthResponse } from '@/lib/types'
 
 export function LoginForm({
   className,
@@ -46,6 +38,8 @@ export function LoginForm({
     },
   })
 
+  const login = useAuthStore((state) => state.login)
+
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
     setErrorMessage(null)
@@ -60,6 +54,8 @@ export function LoginForm({
 
       if (response.status === 401) {
       } else if (response.status === 200) {
+        const data = await response.json() as AuthResponse
+        await login(data.cookie)
         navigate('/')
       }
     } catch (error) {
